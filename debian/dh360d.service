@@ -1,0 +1,18 @@
+[Unit]
+Description=Darkflash DH360D AIO LCD — stream host sensors to the pump screen
+Documentation=https://github.com/clarkse/dh360d
+After=multi-user.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/dh360d
+ExecStart=/usr/bin/dh360d daemon
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

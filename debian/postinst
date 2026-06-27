@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "configure" ]; then
+    # Reload udev so the access rule + /dev/dh360d symlink take effect immediately.
+    udevadm control --reload-rules 2>/dev/null || true
+    udevadm trigger --subsystem-match=tty 2>/dev/null || true
+fi
+
+#DEBHELPER#
+
+exit 0

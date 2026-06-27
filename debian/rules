@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+# dh360d — pure-Python tool + systemd/udev integration (no compilation).
+
+%:
+	dh $@
+
+override_dh_auto_build:
+override_dh_auto_test:
+
+override_dh_auto_install:
+	install -Dm755 dh360d/cli.py debian/dh360d/usr/bin/dh360d
+	install -Dm644 packaging/dh360d.default debian/dh360d/etc/default/dh360d
+	install -Dm644 udev/99-dh360d.rules debian/dh360d/lib/udev/rules.d/99-dh360d.rules

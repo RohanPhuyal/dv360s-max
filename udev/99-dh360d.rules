@@ -1,0 +1,16 @@
+# Darkflash DH360D ("DH space station") AIO — WCH CH340 USB-UART bridge.
+# Grants dialout access, creates a stable /dev/dh360d symlink, and (re)starts the
+# dh360d service when the cooler is plugged in.
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", \
+    MODE="0660", GROUP="dialout", SYMLINK+="dh360d", TAG+="systemd", \
+    ENV{SYSTEMD_WANTS}="dh360d.service"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7522", \
+    MODE="0660", GROUP="dialout", SYMLINK+="dh360d", TAG+="systemd", \
+    ENV{SYSTEMD_WANTS}="dh360d.service"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="5523", \
+    MODE="0660", GROUP="dialout", SYMLINK+="dh360d", TAG+="systemd", \
+    ENV{SYSTEMD_WANTS}="dh360d.service"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="e523", \
+    MODE="0660", GROUP="dialout", SYMLINK+="dh360d", TAG+="systemd", \
+    ENV{SYSTEMD_WANTS}="dh360d.service"

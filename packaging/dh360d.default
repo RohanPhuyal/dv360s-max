@@ -1,0 +1,9 @@
+# Configuration for the dh360d systemd service (/etc/default/dh360d).
+# All values are optional.
+
+# Serial port. Leave unset to auto-detect the CH340 (recommended). The udev rule
+# also creates /dev/dh360d as a stable symlink you can pin to:
+#DH360D_PORT=/dev/dh360d
+
+# Seconds between screen updates (the cooler wants roughly one frame per second).
+DH360D_INTERVAL=1.0

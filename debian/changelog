@@ -1,0 +1,9 @@
+dh360d (1.0.0-1) unstable; urgency=medium
+
+  * Initial release.
+  * CH340-based serial driver for the Darkflash DH360D AIO LCD.
+  * CLI: detect, handshake, push, daemon, sniff.
+  * systemd service streams live host sensors to the pump screen on boot.
+  * udev rule for non-root access and a /dev/dh360d symlink.
+
+ -- S. Eric Clark <25495882+clarkse@users.noreply.github.com>  Sat, 27 Jun 2026 03:45:46 +0000

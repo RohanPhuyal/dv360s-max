@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dh360d"
+version = "1.0.0"
+description = "Linux driver for the Darkflash DH360D ('DH space station') AIO LCD"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "S. Eric Clark" }]
+requires-python = ">=3.8"
+dependencies = ["pyserial>=3.5", "psutil>=5.9"]
+keywords = ["darkflash", "dh360d", "aio", "cooler", "ch340", "lcd", "serial"]
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Hardware",
+]
+
+[project.urls]
+Homepage = "https://github.com/clarkse/dh360d"
+Repository = "https://github.com/clarkse/dh360d"
+
+[project.scripts]
+dh360d = "dh360d.cli:main"
+
+[tool.setuptools]
+packages = ["dh360d"]

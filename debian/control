@@ -1,0 +1,20 @@
+Source: dh360d
+Section: utils
+Priority: optional
+Maintainer: S. Eric Clark <25495882+clarkse@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://github.com/clarkse/dh360d
+Rules-Requires-Root: no
+
+Package: dh360d
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-serial, python3-psutil
+Description: Linux driver for the Darkflash DH360D AIO LCD ("DH space station")
+ Drives the small LCD on the Darkflash DH360D liquid-cooler pump from Linux,
+ showing live CPU temperature, CPU usage and RAM usage on the screen.
+ .
+ The vendor only ships a Windows application. This package speaks the same
+ serial protocol over the cooler's WCH CH340 USB-to-UART bridge, and installs a
+ systemd service that streams host sensors to the screen and starts on boot.
+ A udev rule grants access and creates a stable /dev/dh360d symlink.
