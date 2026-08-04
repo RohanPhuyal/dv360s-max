@@ -20,7 +20,7 @@ import os
 import sys
 import time
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 BAUD = 115200
 HANDSHAKE = bytes([0x02, 0x01, 0x00])
@@ -32,6 +32,18 @@ CH340_PIDS = {0x7523, 0x7522, 0x5523, 0xE523}
 
 # 10-byte CMD 0x01 payload = five 16-bit big-endian fields (verified against the screen)
 STATUS_FIELDS = ("cpu_temp", "pump_rpm", "fan_rpm", "cpu_usage", "ram_usage")
+
+# The pump screen only renders four values, and its single RPM readout is fed by the
+# pump_rpm slot. The DH360D's pump tach is not exposed to the host (the board's "Pump
+# Fan" header reads 0), so we put the radiator-fan RPM in both RPM slots — whichever
+# one the firmware draws, the user sees a real number.
+FAN_LABEL = os.environ.get("DH360D_FAN_LABEL", "CPU Fan")
+
+# The screen's percentage boxes are two characters wide. Confirmed on-screen 2026-08-03:
+# 33 / 42 / 55 render correctly, 100 renders as "FF". Cap live percentages at 99 so a
+# saturated machine shows a plausible number instead of a glyph. (Only the daemon clamps
+# — `push` stays a raw protocol tool so future firmware probing sends exactly what it asks.)
+PCT_MAX = 99
 
 
 # --------------------------------------------------------------------------- io
@@ -119,7 +131,20 @@ def host_sensors():
     def ram_usage():
         return round(psutil.virtual_memory().percent) if psutil else 0
 
-    return cpu_temp, cpu_usage, ram_usage
+    def fan_rpm():
+        if not (psutil and hasattr(psutil, "sensors_fans")):
+            return 0
+        fans = psutil.sensors_fans() or {}
+        every = [f for arr in fans.values() for f in arr]
+        for f in every:                       # preferred header (default "CPU Fan")
+            if f.label == FAN_LABEL and f.current:
+                return round(f.current)
+        for f in every:                       # otherwise the first header that spins
+            if f.current:
+                return round(f.current)
+        return 0
+
+    return cpu_temp, cpu_usage, ram_usage, fan_rpm
 
 
 # -------------------------------------------------------------------- commands
@@ -180,7 +205,7 @@ def cmd_sniff(a):
 
 def cmd_daemon(a):
     serial, _ = _serial()
-    rt, ru, rr = host_sensors()
+    rt, ru, rr, rf = host_sensors()
     interval = a.interval or float(os.environ.get("DH360D_INTERVAL", "1.0"))
     log = (lambda m: print(m, flush=True)) if a.verbose else (lambda m: None)
     print(f"dh360d daemon: streaming host sensors every {interval}s (Ctrl-C to stop)",
@@ -192,7 +217,9 @@ def cmd_daemon(a):
             ser, reply = open_and_handshake(serial, port, reset=False)
             log(f"connected {port}; handshake {reply.hex(' ') or '(none)'}")
             while True:
-                vals = dict(cpu_temp=rt(), cpu_usage=ru(), ram_usage=rr())
+                rpm = rf()
+                vals = dict(cpu_temp=rt(), pump_rpm=rpm, fan_rpm=rpm,
+                            cpu_usage=min(PCT_MAX, ru()), ram_usage=min(PCT_MAX, rr()))
                 ser.write(encode_status(vals))
                 ser.read(4)                       # consume ACK
                 log("  ".join(f"{k}={v}" for k, v in vals.items()))

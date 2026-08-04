@@ -11,3 +11,7 @@ override_dh_auto_install:
 	install -Dm755 dh360d/cli.py debian/dh360d/usr/bin/dh360d
 	install -Dm644 packaging/dh360d.default debian/dh360d/etc/default/dh360d
 	install -Dm644 udev/99-dh360d.rules debian/dh360d/lib/udev/rules.d/99-dh360d.rules
+# systemd/dh360d.service is the single source of truth for the unit, shared with
+# packaging/build-deb.sh. There used to be a second copy at debian/dh360d.service that
+# dh_installsystemd picked up instead; it drifted and kept shipping a stale unit.
+	install -Dm644 systemd/dh360d.service debian/dh360d/lib/systemd/system/dh360d.service

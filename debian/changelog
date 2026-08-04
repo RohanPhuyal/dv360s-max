@@ -1,3 +1,18 @@
+dh360d (1.0.1-1) unstable; urgency=medium
+
+  * daemon: report real radiator fan RPM instead of a hardcoded 0. The RPM
+    fields were never populated, so the screen always showed 0000.
+  * daemon: cap reported percentages at 99. The screen's percentage boxes are
+    two characters wide and the firmware renders 100 as "FF".
+  * service: drop After=multi-user.target. It made the start job wait on the
+    whole boot transaction, so a hung plymouth-quit-wait.service could leave
+    the driver queued and never dispatched. The udev rule's SYSTEMD_WANTS
+    starts it when the CH340 enumerates.
+  * packaging: ship systemd/dh360d.service from debian/rules too. A second,
+    stale copy at debian/dh360d.service was shadowing it in debhelper builds.
+
+ -- S. Eric Clark <25495882+clarkse@users.noreply.github.com>  Mon, 03 Aug 2026 22:52:47 -0700
+
 dh360d (1.0.0-1) unstable; urgency=medium
 
   * Initial release.

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dh360d"
-version = "1.0.0"
+version = "1.0.1"
 description = "Linux driver for the Darkflash DH360D ('DH space station') AIO LCD"
 readme = "README.md"
 license = { text = "MIT" }

@@ -1,8 +1,11 @@
 [Unit]
 Description=Darkflash DH360D AIO LCD — stream host sensors to the pump screen
 Documentation=https://github.com/clarkse/dh360d
-# Start once the basic system is up; the daemon waits/retries for the device itself.
-After=multi-user.target
+# Deliberately NOT ordered After=multi-user.target. The udev rule tags the cooler with
+# SYSTEMD_WANTS=dh360d.service, so this starts the moment the CH340 enumerates. Ordering
+# after multi-user.target made the start job wait on the whole boot transaction: a hung
+# plymouth-quit-wait.service once left it queued (never dispatched) for a week.
+# The daemon waits/retries for the device itself, so it needs no ordering of its own.
 
 [Service]
 Type=simple
