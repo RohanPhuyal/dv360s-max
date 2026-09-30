@@ -1,0 +1,9 @@
+# Darkflash DV240S MAX / DV360S MAX AIO Cooler Display & Internal Hub
+# 1. Disable USB autosuspend on internal Genesys Logic USB hub
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="05e3", ATTR{idProduct}=="0608", ATTR{power/control}="on"
+
+# 2. Disable USB autosuspend on Hotspotek display controller
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1800", ATTR{idProduct}=="3008", ATTR{power/control}="on"
+
+# 3. Grant non-root read/write access to hidraw device
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1800", ATTRS{idProduct}=="3008", MODE="0666", TAG+="uaccess"

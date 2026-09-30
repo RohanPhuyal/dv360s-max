@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Darkflash Studio
+Comment=Darkflash DV240S/DV360S MAX LCD Screen Controller & Compositor
+Exec=darkflash-studio
+Icon=preferences-desktop-display
+Terminal=false
+Type=Application
+Categories=Utility;HardwareSettings;Settings;
+StartupWMClass=DarkflashStudio
+Keywords=darkflash;cooler;aio;lcd;display;screen;dv360s;dv240s;

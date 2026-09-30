@@ -15,3 +15,15 @@ debian/debhelper-build-stamp
 ../dh360d_*.buildinfo
 ../dh360d_*.changes
 *.deb
+
+# Dumps and reverse engineering materials (>2GB Windows dumps)
+driver_dump/
+
+# Runtime user uploads in web GUI
+dh360d/web/uploads/*
+!dh360d/web/uploads/.gitkeep
+
+# Temporary / editor artifacts
+*.bak
+*.log
+*.tmp

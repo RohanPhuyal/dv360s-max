@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Darkflash Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">DF</div>
+      <div>
+        <div class="brand-title">DARKFLASH STUDIO</div>
+        <div style="font-size: 10px; color: var(--text-dim);">DV360S Max IPS Display Controller</div>
+      </div>
+      <div class="brand-badge">MATERIAL 3</div>
+    </div>
+
+    <!-- Mode Tabs Switcher -->
+    <div class="mode-tabs">
+      <button class="tab-btn active" id="tab-raw" data-tab="raw">
+        <span class="tab-icon">⚙️</span> RAW ENGINE
+      </button>
+      <button class="tab-btn" id="tab-rendered" data-tab="rendered">
+        <span class="tab-icon">🎬</span> RENDERED THEMES
+      </button>
+    </div>
+
+    <div class="header-status">
+      <!-- Game Mode Toggle Button -->
+      <button class="btn-gamemode" id="btn-gamemode" title="Pause cooler display streaming during games to free up 100% CPU/GPU resources">
+        <span class="icon">🎮</span>
+        <span id="gamemode-text">GAME MODE: OFF</span>
+      </button>
+
+      <div class="hw-badge" id="hw-status-badge">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="hw-status-text">Detecting cooler...</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; color: var(--text-dim);">Brightness</span>
+        <input type="range" id="brightness-slider" min="0" max="100" value="100" style="width: 85px;">
+        <span id="brightness-val" style="font-size: 11px; color: var(--accent-cyan); width: 32px;">100%</span>
+      </div>
+
+      <button class="btn-secondary" id="btn-minimize" style="padding: 5px 12px; font-size: 11px;" title="Keep display streaming in background and close window">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Minimize
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Viewports -->
+  <main>
+    <!-- Tab 1: RAW Layout Engine (3-Column Workspace) -->
+    <div class="studio-view active" id="raw-view">
+
+      <!-- Left Panel: Layers & Sources -->
+      <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Sources & Widgets
+        </span>
+      </div>
+
+      <div class="panel-content">
+
+        <!-- Background Source Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>BACKGROUND</span>
+            <span id="bg-type-tag" style="font-size: 10px; color: var(--accent-cyan);">IMAGE</span>
+          </div>
+
+          <div class="dropzone" id="bg-dropzone">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <div>Drop Image, Video, or GIF</div>
+            <div style="font-size: 9px; color: var(--text-muted);">MP4, WebM, GIF, PNG, JPG</div>
+            <input type="file" id="bg-file-input" accept="image/*,video/*" style="display: none;">
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" id="btn-browse-bg" style="flex: 1; padding: 6px 12px; font-size: 11px;">Browse File</button>
+            <button class="btn-secondary" id="btn-sample-bg" style="flex: 1; padding: 6px 12px; font-size: 11px;">Load Sample</button>
+          </div>
+        </div>
+
+        <!-- Add Widgets Toolbox -->
+        <div class="card">
+          <div class="card-title">ADD WIDGET LAYER</div>
+          <div class="widget-grid">
+            <button class="btn-widget" onclick="addWidget('cpu_temp')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+              CPU Temp °C
+            </button>
+            <button class="btn-widget" onclick="addWidget('gpu_temp')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+              GPU Temp °C
+            </button>
+            <button class="btn-widget" onclick="addWidget('dual_temp')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 11V3M17 11V3M7 21a4 4 0 0 1 0-8M17 21a4 4 0 0 1 0-8"/></svg>
+              Dual Temp HUD
+            </button>
+            <button class="btn-widget" onclick="addWidget('cpu_load')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              CPU Load %
+            </button>
+            <button class="btn-widget" onclick="addWidget('cpu_gauge')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              CPU Gauge
+            </button>
+            <button class="btn-widget" onclick="addWidget('gpu_gauge')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+              GPU Gauge
+            </button>
+            <button class="btn-widget" onclick="addWidget('ram_gauge')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19v-3m4 3v-3m4 3v-3m4 3v-3M4 5h16v11H4z"/></svg>
+              RAM Bar
+            </button>
+            <button class="btn-widget" onclick="addWidget('ram_stat')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+              RAM Stat GB
+            </button>
+            <button class="btn-widget" onclick="addWidget('clock')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Clock & Date
+            </button>
+            <button class="btn-widget" onclick="addWidget('text')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+              Custom Text
+            </button>
+            <button class="btn-widget" onclick="addWidget('badge')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+              Icon Badge
+            </button>
+          </div>
+        </div>
+
+        <!-- Layout Presets Card -->
+        <div class="card">
+          <div class="card-title">
+            <span>GALLERY PRESETS</span>
+            <span id="preset-count-badge" style="font-size: 10px; color: var(--accent-cyan); background: rgba(0, 240, 255, 0.1); padding: 2px 6px; border-radius: 4px;">PRESETS</span>
+          </div>
+          <select id="preset-selector" style="width: 100%; min-width: 0; box-sizing: border-box;">
+            <option value="blank">➕ Blank Canvas (New)</option>
+            <optgroup label="Curated Gallery">
+              <option value="reactor_core" selected>⚡ Sci-Fi Reactor Core</option>
+              <option value="turbo_gauge">🏎️ Automotive Turbo Gauge</option>
+              <option value="retrowave_car">🌆 Cyberpunk Retrowave Car</option>
+              <option value="anime_cyber">🌸 Cyber Anime Neon</option>
+              <option value="neon_alley">🌃 Tokyo Neon Alley</option>
+              <option value="carbon_telemetry">⚙️ Carbon Fiber Telemetry</option>
+              <option value="cyberpunk">🌌 Cyberpunk Serpantinum</option>
+              <option value="minimal">✨ Minimalist Clean</option>
+            </optgroup>
+            <optgroup label="My Custom Presets" id="custom-presets-group" style="display: none;"></optgroup>
+          </select>
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <button class="btn-secondary" id="btn-new-blank" style="flex: 1; min-width: 0; padding: 7px 10px; font-size: 11px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Blank Canvas
+            </button>
+            <button class="btn-secondary" id="btn-save-preset" style="flex: 1; min-width: 0; padding: 7px 10px; font-size: 11px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save Preset
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Center Stage: 480x480 Workspace Canvas -->
+    <div class="stage-container">
+      <div class="canvas-wrapper">
+        <canvas id="preview-canvas" width="480" height="480"></canvas>
+        <div class="bezel-overlay" id="bezel-overlay"></div>
+      </div>
+
+      <!-- Floating Canvas Control Pill -->
+      <div class="stage-toolbar">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 11px; color: var(--text-dim);">Rotation</span>
+          <div class="pill-group" id="rotation-group">
+            <button class="pill-btn" data-angle="0">0°</button>
+            <button class="pill-btn active" data-angle="90">90° AM5</button>
+            <button class="pill-btn" data-angle="180">180°</button>
+            <button class="pill-btn" data-angle="270">270°</button>
+          </div>
+        </div>
+
+        <div style="width: 1px; height: 20px; background: var(--surface2);"></div>
+
+        <button class="icon-btn" id="btn-toggle-bezel" title="Toggle Circular AIO Bezel Overlay">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+        </button>
+
+        <button class="icon-btn" id="btn-center-selected" title="Center Selected Layer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Panel: Layer Stack & Inspector & Apply -->
+    <div class="panel right">
+      <div class="panel-header">
+        <span class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/></svg>
+          Layers & Inspector
+        </span>
+      </div>
+
+      <div class="panel-content">
+
+        <!-- Layer Stack -->
+        <div class="card">
+          <div class="card-title">
+            <span>LAYER STACK</span>
+            <span id="layer-count" style="font-size: 10px; color: var(--text-muted);">0 Layers</span>
+          </div>
+          <div class="layer-list" id="layer-list">
+            <!-- Dynamically populated layers -->
+          </div>
+        </div>
+
+        <!-- Layer Properties Inspector -->
+        <div class="card" id="inspector-card">
+          <div class="card-title">
+            <span id="inspector-title">LAYER PROPERTIES</span>
+            <button class="icon-btn delete" id="btn-delete-layer" title="Delete Layer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+
+          <div id="inspector-fields" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Populated based on selected layer -->
+            <div style="font-size: 11px; color: var(--text-dim); text-align: center; padding: 12px 0;">
+              Select a layer to edit properties
+            </div>
+          </div>
+        </div>
+
+        <!-- Hardware Apply Section -->
+        <div class="card" style="margin-top: auto; background: var(--bg-crust); border-color: rgba(0, 240, 255, 0.2);">
+          <button class="btn-primary" id="btn-apply-cooler">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            APPLY TO COOLER
+          </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" id="btn-sleep-cooler" style="flex: 1;">Put to Sleep</button>
+            <button class="btn-secondary" id="btn-wake-cooler" style="flex: 1;">Wake</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </div> <!-- Close #raw-view -->
+
+    <!-- Tab 2: RENDERED THEMES (Official Animated Motion Themes) -->
+    <div class="studio-view" id="rendered-view">
+      <div class="rendered-scroll-container">
+        <div class="rendered-hero">
+          <div>
+            <div class="rendered-title-row">
+              <span class="rendered-badge">MOTION HUD</span>
+              <h2>OFFICIAL ANIMATED THEMES</h2>
+            </div>
+            <p class="rendered-subtitle">
+              High-motion 20 FPS video loops extracted from the official Darkflash Space Station software, with dynamic hardware telemetry overlays updating in real time.
+            </p>
+          </div>
+          <div class="rendered-stats-pill">
+            <span class="dot-live"></span>
+            <span>TELEMETRY: <strong>REALTIME 1.0s</strong></span>
+            <span style="opacity: 0.3;">|</span>
+            <span>HARDWARE: <strong>FFMPEG STREAM</strong></span>
+          </div>
+        </div>
+
+        <!-- Theme Size & Scale Bar -->
+        <div class="theme-size-bar">
+          <div class="theme-size-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            <span>Theme & HUD Size:</span>
+          </div>
+          <div class="size-pill-group" id="rendered-size-pill-group">
+            <button class="size-pill-btn" data-scale="0.80">80% Compact</button>
+            <button class="size-pill-btn" data-scale="0.90">90%</button>
+            <button class="size-pill-btn active" data-scale="1.00">100% Standard</button>
+            <button class="size-pill-btn" data-scale="1.15">115%</button>
+            <button class="size-pill-btn" data-scale="1.30">130% Large</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+            <span style="font-size: 11px; color: var(--text-dim);">Custom Zoom:</span>
+            <input type="range" id="rendered-scale-slider" min="50" max="150" value="100" step="5" style="width: 120px;">
+            <span id="rendered-scale-val" style="font-size: 11px; font-weight: 700; color: var(--accent-cyan); width: 38px;">100%</span>
+          </div>
+        </div>
+
+        <div class="theme-grid">
+
+          <!-- Theme 1: Cyber Reactor Core -->
+          <div class="theme-card" data-video="/assets/official/theme_1.mp4" data-theme-id="theme_1">
+            <div class="theme-media">
+              <video src="/assets/official/theme_1.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill">OFFICIAL LOOP</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">⚡ Cyber Reactor Core</div>
+              <div class="theme-desc">Futuristic magnetic energy fusion core with dual-ring arc tachometers and live CPU/GPU readouts.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">Dual Temp HUD</span>
+                <span class="hud-tag">AM5 Badge</span>
+                <span class="hud-tag">Clock</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="theme_1">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme 2: Space Station Orbit -->
+          <div class="theme-card" data-video="/assets/official/splash.mp4" data-theme-id="splash">
+            <div class="theme-media">
+              <video src="/assets/official/splash.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill highlight">FLAGSHIP 3D</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">🚀 Orbital Space Station</div>
+              <div class="theme-desc">The flagship Darkflash Space Station animation with rotating telemetry and digital chronometer.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">Digital Clock</span>
+                <span class="hud-tag">Dual Temp HUD</span>
+                <span class="hud-tag">RAM Stat</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="splash">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme 3: Turbo Mach Speed -->
+          <div class="theme-card" data-video="/assets/official/theme_2.mp4" data-theme-id="theme_2">
+            <div class="theme-media">
+              <video src="/assets/official/theme_2.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill">AUTOMOTIVE</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">🏎️ Turbo Mach Tachometer</div>
+              <div class="theme-desc">High-rpm automotive dial animation with CPU boost temperature and load readouts.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">CPU Temp Readout</span>
+                <span class="hud-tag">CPU Load %</span>
+                <span class="hud-tag">Sport Badge</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="theme_2">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme 4: Neon Cyber Vitals -->
+          <div class="theme-card" data-video="/assets/official/theme_3.mp4" data-theme-id="theme_3">
+            <div class="theme-media">
+              <video src="/assets/official/theme_3.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill">SERPANTINUM</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">🌌 Neon Cyber Vitals</div>
+              <div class="theme-desc">Vibrant Matugen neon cyber grid with full-system telemetry and RAM progress gauge.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">RAM Bar</span>
+                <span class="hud-tag">Dual Temp HUD</span>
+                <span class="hud-tag">Clock</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="theme_3">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme 5: Sci-Fi Ring Core -->
+          <div class="theme-card" data-video="/assets/official/theme_4.mp4" data-theme-id="theme_4">
+            <div class="theme-media">
+              <video src="/assets/official/theme_4.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill">NEON CORE</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">🌀 Quantum Ring Accelerator</div>
+              <div class="theme-desc">Spinning quantum ring array with centered temperature readout and digital chronometer.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">CPU Gauge</span>
+                <span class="hud-tag">Digital Clock</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="theme_4">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme 6: Quantum Particle Vortex -->
+          <div class="theme-card" data-video="/assets/official/theme_5.mp4" data-theme-id="theme_5">
+            <div class="theme-media">
+              <video src="/assets/official/theme_5.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill">VORTEX</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">🔮 Quantum Particle Vortex</div>
+              <div class="theme-desc">Dense particle accelerator storm with floating frosted glass telemetry HUD.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">Dual Temp HUD</span>
+                <span class="hud-tag">AM5 Badge</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="theme_5">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme 7: Tokyo Neon Rain -->
+          <div class="theme-card" data-video="/assets/official/theme_6.mp4" data-theme-id="theme_6">
+            <div class="theme-media">
+              <video src="/assets/official/theme_6.mp4" autoplay loop muted playsinline></video>
+              <span class="theme-pill">ATMOSPHERIC</span>
+            </div>
+            <div class="theme-details">
+              <div class="theme-name">🌃 Tokyo Cyberpunk Rain</div>
+              <div class="theme-desc">Atmospheric neon city street with clock and minimalist dual sensor badges.</div>
+              <div class="theme-huds">
+                <span class="hud-tag">Digital Clock</span>
+                <span class="hud-tag">Dual Temp HUD</span>
+              </div>
+              <button class="btn-primary btn-apply-theme" data-theme-id="theme_6">
+                ▶ APPLY THEME TO COOLER
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div> <!-- Close #rendered-view -->
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

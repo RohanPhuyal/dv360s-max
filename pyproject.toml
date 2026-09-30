@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dh360d"
 version = "1.0.1"
-description = "Linux driver for the Darkflash DH360D ('DH space station') AIO LCD"
+description = "Linux driver and Darkflash Studio GUI for Darkflash DV240S/DV360S MAX and DH360D AIO LCD coolers"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [{ name = "S. Eric Clark" }]
+authors = [{ name = "S. Eric Clark" }, { name = "Rohan Phuyal" }]
 requires-python = ">=3.8"
-dependencies = ["pyserial>=3.5", "psutil>=5.9"]
-keywords = ["darkflash", "dh360d", "aio", "cooler", "ch340", "lcd", "serial"]
+dependencies = ["pyserial>=3.5", "psutil>=5.9", "Pillow>=9.0"]
+keywords = ["darkflash", "dh360d", "dv360s", "dv240s", "aio", "cooler", "ch340", "lcd", "serial", "hid", "studio", "gui"]
 classifiers = [
     "Operating System :: POSIX :: Linux",
     "License :: OSI Approved :: MIT License",
@@ -20,11 +20,16 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/clarkse/dh360d"
-Repository = "https://github.com/clarkse/dh360d"
+Homepage = "https://github.com/RohanPhuyal/dv360s-max"
+Repository = "https://github.com/RohanPhuyal/dv360s-max"
 
 [project.scripts]
 dh360d = "dh360d.cli:main"
+dv360s = "dh360d.dv360s:main"
+darkflash-studio = "dh360d.studio:main"
 
 [tool.setuptools]
 packages = ["dh360d"]
+
+[tool.setuptools.package-data]
+dh360d = ["web/**/*", "web/*"]

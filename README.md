@@ -1,166 +1,193 @@
-# dh360d — Linux driver for the Darkflash DH360D AIO LCD
+# Darkflash DV240S MAX / DV360S MAX & DH360D Linux Driver & Studio GUI
 
-The **Darkflash DH360D** ("DH space station") is a 360 mm liquid CPU cooler whose
-pump carries a small **LCD screen** that displays live PC stats (CPU temperature,
-CPU usage, RAM, pump RPM). The vendor ships **only a Windows application** to drive
-that screen — nothing for Linux.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python: 3.8+](https://img.shields.io/badge/Python-3.8+-brightgreen.svg)](https://www.python.org/)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://kernel.org/)
 
-`dh360d` is a small, dependency-light **Linux driver** that speaks the cooler's serial
-protocol directly, so the screen shows live stats on Linux with **no Windows, no Wine,
-and no proprietary driver** at runtime. A systemd service keeps it updated and brings
-it back on every reboot.
-
-> Reverse-engineered from the vendor app and **verified against real hardware** — the
-> pump screen updates live from this tool. See [How this was built](#how-this-was-built)
-> and [docs/PROTOCOL.md](docs/PROTOCOL.md).
+Native, lightweight Linux driver and **Darkflash Studio GUI** control panel for **Darkflash AIO Liquid CPU Coolers** with pump LCD screens. Drive your cooler screen natively on Linux with **no Windows, no Wine, and no proprietary background software**.
 
 ---
 
-## Why this exists
+## 🖥️ Supported Hardware
 
-The DH360D's screen is not a generic USB display — it is driven over a serial link by
-the vendor's closed-source Windows app. On Linux the cooler still pumps and cools
-perfectly (it is a normal AIO), but the screen stays dark/stale because there is no
-Linux software. This project fills that gap: it implements the same wire protocol the
-Windows app uses, reading your CPU temperature / usage / RAM from the kernel and pushing
-them to the pump screen.
+| Cooler Model | Screen Type | Interface | Hardware ID | Driver Protocol |
+|---|---|---|---|---|
+| **Darkflash DV240S MAX** | 480×480 Circular LCD | USB-HID (`hidraw`) | `1800:3008` (Hotspotek) | JPEG Chunked (`0xDA` wire protocol) |
+| **Darkflash DV360S MAX** | 480×480 Circular LCD | USB-HID (`hidraw`) | `1800:3008` (Hotspotek) | JPEG Chunked (`0xDA` wire protocol) |
+| **Darkflash DH360D** ("DH Space Station") | Segment/Rectangular LCD | Serial (CH340 UART) | `1a86:7523` (WCH) | Serial Byte Protocol (115200 8N1) |
 
-## Hardware / specs
+---
 
-| | |
-|---|---|
-| **Cooler** | Darkflash DH360D ("DH space station"), 360 mm liquid AIO with pump LCD |
-| **Bridge chip** | WCH **CH340** USB-to-UART (USB `1a86:7523`; also `:7522/:5523/:e523`) |
-| **Linux kernel driver** | in-tree `ch341` (`ch341-uart`) — already present, nothing to install |
-| **Appears as** | `/dev/ttyUSB0` (this package also adds a stable `/dev/dh360d` symlink) |
-| **Serial params** | **115200 baud, 8N1**, no flow control |
-| **Protocol** | `[CMD][LEN][DATA]`, no checksum (see [docs/PROTOCOL.md](docs/PROTOCOL.md)) |
+## ✨ Features & Darkflash Studio GUI
 
-The cooler does **not** present as USB-HID or WinUSB; it is a plain USB-to-serial device.
+Yes! This package includes **Darkflash Studio**, a full graphical control panel matching modern **Serpantinum** styling (Matugen Material Design 3, frosted glassmorphism, responsive layout):
 
-## Install
+- **🎨 Full Graphical Studio UI**:
+  - Launch from your application menu or run `darkflash-studio`.
+  - Accessible in any web browser at `http://127.0.0.1:8989` or as a standalone native app window.
+- **🛠️ Interactive HUD Drag-and-Drop Editor ("RAW" tab)**:
+  - Add, arrange, color, and resize real-time hardware telemetry widgets:
+    - **CPU & GPU Temperature Readouts** (`cpu_temp`, `gpu_temp`, `dual_temp`)
+    - **CPU Load % & System RAM Usage** (`cpu_load`, `ram_stat`, `ram_gauge`)
+    - **Digital Chronometer Clock** with **12-Hour / 24-Hour** modes and optional **AM/PM** badge
+    - **Circular Gauges, Progress Bars, and Text Badges**
+- **✨ Universal Visual FX & Glow Engine**:
+  - Configurable **Neon Bloom Glow**, **Drop Shadows**, and **High-Contrast Outlines** with live blur and color adjustment.
+- **🎬 Official Animated Theme Suite ("RENDERED THEMES" tab)**:
+  - Includes all official Darkflash 3D animations:
+    1. 🚀 **Orbital Space Station** (*Engineered with subpixel seamless looping*)
+    2. 🌃 **Tokyo Cyberpunk Rain** (*Engineered with subpixel seamless looping*)
+    3. ⚡ **Cyber Reactor Core**
+    4. 🏎️ **Turbo Mach Tachometer**
+    5. 🌌 **Neon Cyber Vitals**
+    6. 🌀 **Quantum Ring Accelerator**
+    7. 🔮 **Quantum Particle Vortex**
+- **⚡ 0.0% FFmpeg Background CPU Optimization**:
+  - Pre-buffers short video loops into RAM in ~60ms on startup and immediately terminates FFmpeg.
+  - Streams directly from memory at 20 FPS with **0.0% FFmpeg CPU usage** and <3% total system CPU load.
+- **🎮 1-Click Game Mode**:
+  - One-click toggle in the header (`GAME MODE: OFF / ON`) pauses rendering and USB transmissions to preserve 100% CPU/GPU resources for gaming.
+- **📐 Universal Sizing & Circular Bezel Safe Zone**:
+  - Proportional theme scaling (`➖ 10% Smaller` / `➕ 10% Larger`), background zoom slider (30% to 200%), and circular LCD guide to ensure widgets never clip into the round glass bezel.
 
-### Option A — Debian/Ubuntu package (recommended)
+---
 
+## 📦 Installation
+
+### Step 1: Install System Dependencies
+
+Install Python 3, pip, Pillow, psutil, pyserial, and ffmpeg:
+
+#### Arch Linux / Manjaro:
 ```bash
-# build the .deb (only needs dpkg-deb, already on Debian/Ubuntu)
-./packaging/build-deb.sh
-sudo apt install ./dist/dh360d_1.0.0-1_all.deb
+sudo pacman -S --needed python python-pip python-pillow python-psutil python-pyserial ffmpeg
 ```
 
-The package depends on `python3-serial` and `python3-psutil` (pulled in by apt),
-installs the `dh360d` CLI, the udev rule, and a systemd service that is **enabled and
-started automatically** — so the screen lights up immediately and on every boot.
-
-### Option B — source install (any systemd distro)
-
+#### Ubuntu / Debian / Pop!_OS:
 ```bash
-sudo ./install.sh        # installs deps, CLI, udev rule, systemd service (enabled)
+sudo apt update
+sudo apt install -y python3 python3-pip python3-pil python3-psutil python3-serial ffmpeg
 ```
 
-### Option C — Python only (no service)
-
+#### Fedora / RHEL:
 ```bash
-pip install .            # or: pip install pyserial psutil && python -m dh360d ...
+sudo dnf install -y python3 python3-pip python3-pillow python3-psutil python3-pyserial ffmpeg
 ```
 
-After installing, add yourself to the `dialout` group for non-root CLI use
-(`sudo usermod -aG dialout "$USER"`, then re-login). The service runs as root and does
-not need this.
+---
 
-## Usage
+### Step 2: Clone and Install
 
 ```bash
-dh360d detect                       # find the cooler's serial port
-dh360d handshake --reset            # send 02 01 00, expect reply 31
+git clone https://github.com/RohanPhuyal/dv360s-max.git
+cd dv360s-max
 
-# push a one-off frame to the screen:
+# Run the automated installer (installs package, udev rules, desktop launcher, and systemd service):
+sudo ./install.sh
+```
+
+*(Alternatively, you can install as a regular user via pip: `pip install -e .`)*
+
+---
+
+### Step 3: Enable Non-Root USB Permissions (udev)
+
+If you ran `sudo ./install.sh`, udev rules are already installed. If installing manually:
+
+```bash
+# 1. Copy udev rule for DV240S/DV360S MAX (disables USB autosuspend and grants hidraw access)
+sudo cp udev/99-darkflash-display.rules /etc/udev/rules.d/
+
+# 2. Reload udev
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+> **Note:** If your user is not already in the `input` or `plugdev` group, log out and log back in, or check `ls -l /dev/hidraw*` to verify read/write access.
+
+---
+
+### Step 4: Enable Background Service (Optional but Recommended)
+
+To have the cooler display start automatically on boot and stream in the background:
+
+```bash
+# Enable as a user service (recommended for desktop sessions):
+systemctl --user enable --now darkflash-studio.service
+
+# Check status:
+systemctl --user status darkflash-studio.service
+```
+
+---
+
+## 🚀 Usage
+
+### 1. Launching Darkflash Studio (GUI)
+
+- **From Application Launcher:** Search for **"Darkflash Studio"** in your desktop menu.
+- **From Terminal:**
+  ```bash
+  darkflash-studio
+  ```
+  *(Opens the GUI in a standalone application window, or point any browser to `http://127.0.0.1:8989`)*
+
+Closing the browser window keeps the background stream running continuously on the cooler. You can re-open the studio anytime with `darkflash-studio`.
+
+---
+
+### 2. Command-Line Tools (CLI)
+
+#### DV240S MAX / DV360S MAX (USB-HID 480×480 LCD):
+
+```bash
+# Detect connected display node
+dv360s detect
+
+# Send a single test pattern / image
+dv360s test
+
+# Stream an MP4 video or GIF directly from terminal
+dv360s stream /path/to/video.mp4 --fps 20 --rotation 90
+
+# Adjust screen brightness (0 to 100)
+dv360s brightness 80
+
+# Put screen to sleep / wake up
+dv360s sleep
+dv360s wake
+```
+
+#### DH360D (CH340 Serial 360mm Cooler):
+
+```bash
+# Detect serial port
+dh360d detect
+
+# Push one-off telemetry frame
 dh360d push --cpu-temp 55 --pump-rpm 2600 --cpu-usage 30 --ram-usage 45
 
-# stream live host sensors continuously (what the service runs):
+# Start serial daemon
 dh360d daemon -v
 ```
 
-### The systemd service
+---
 
-Installed by the `.deb`/`install.sh` and enabled on boot:
+## 🛠️ Architecture & Wire Protocol
 
-```bash
-systemctl status dh360d
-journalctl -u dh360d -f
-```
+For technical details on how the DV240S/DV360S MAX USB-HID JPEG chunking protocol was reverse-engineered from the Windows application, see [`docs/DV360S-PROTOCOL.md`](docs/DV360S-PROTOCOL.md).
 
-Configuration lives in **`/etc/default/dh360d`**:
+For the serial protocol used by the DH360D, see [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
-```sh
-# DH360D_PORT=/dev/dh360d     # pin a port; unset = auto-detect the CH340
-DH360D_INTERVAL=1.0           # seconds between screen updates
-```
+---
 
-The daemon auto-detects the port, retries if the cooler is unplugged, and reconnects
-when it returns — so it survives suspend/replug without help.
+## 🤝 Contributing
 
-## Protocol summary
+Contributions, bug reports, and theme creations are warmly welcomed! Please open an issue or pull request on [GitHub](https://github.com/RohanPhuyal/dv360s-max).
 
-Full details and the capture that proves them are in **[docs/PROTOCOL.md](docs/PROTOCOL.md)**.
+---
 
-```
-Transport : CH340 USB-UART  ->  /dev/ttyUSB0 , 115200 8N1
-Framing   : [CMD:1] [LEN:1] [DATA: LEN bytes]          (no checksum, no escaping)
+## 📄 License
 
-Handshake : host  02 01 00              ->  device  31        (31 21 on a fresh boot)
-Status    : host  01 0A <10 bytes>      ->  device  21  (ACK) , ~1 Hz
-            the 10 data bytes are five 16-bit BIG-ENDIAN fields:
-              bytes 0-1  CPU temperature (°C)
-              bytes 2-3  pump RPM           (shown as "RPM")
-              bytes 4-5  fan RPM            (not shown on this screen model)
-              bytes 6-7  CPU usage (%)
-              bytes 8-9  RAM usage (%)
-```
-
-## How this was built
-
-The vendor app is an **Electron** program; the device-facing logic is compiled to V8
-bytecode, so the protocol constants could not simply be read out of the binary. The
-protocol was recovered dynamically and then verified:
-
-1. **Static unpack.** Unpacked the installer (NSIS → `app-64.7z` → `app.asar`). Found the
-   only hardware dependency is `serialport`, and that the bundled Windows driver is WCH
-   `CH341SER` → the cooler is a **CH340 serial device**, not HID. The Linux `ch341`
-   driver already covers it.
-2. **Run the real app under Wine + a serial man-in-the-middle.** The app carries its own
-   Electron runtime, so it runs under Wine. A `socat` PTY was inserted between the app
-   and the real `/dev/ttyUSB0` to log every byte. `serialport.list()` returns nothing
-   under Wine, so a small **PnP "Ports" registry entry** (`USB\VID_1A86&PID_7523`) was
-   added to make the app enumerate and open the port. The app then connected, the pump
-   screen turned on, and the full exchange was captured.
-3. **Decode the framing.** The capture showed simple `[CMD][LEN][DATA]` frames — handshake
-   `02 01 00`→`31`, then 12-byte status frames `01 0A …` ACKed with `21`. (The HDLC/flag/
-   escape/checksum machinery also present in the app is a *separate* channel used only
-   for streaming images to the screen, not for sensor data.)
-4. **Map the fields against the screen.** Streaming frames with distinct per-field values
-   and reading the on-screen gauges pinned the 10-byte payload to five 16-bit big-endian
-   fields (temp / pump RPM / fan RPM / CPU% / RAM%).
-5. **Verify from Linux.** This tool then drove the screen directly over `/dev/ttyUSB0` —
-   confirming the protocol end-to-end.
-
-A more detailed write-up is in [docs/REVERSE-ENGINEERING.md](docs/REVERSE-ENGINEERING.md).
-
-## Troubleshooting
-
-- **No port found:** `dmesg | grep ch341` should show `ch341-uart converter now attached
-  to ttyUSB0`. If `brltty` grabbed the CH340, remove/mask it.
-- **`handshake` returns nothing:** try `dh360d handshake --reset` (pulses DTR/RTS to reset
-  the pump MCU). If the cooler was just driven by the Windows app, power-cycle it.
-- **Screen shows a field wrong:** the byte layout is documented in `docs/PROTOCOL.md`;
-  open an issue with what you sent vs. what displayed.
-
-## Disclaimer
-
-Independent, unofficial project. Not affiliated with or endorsed by Darkflash/DarkFlash.
-Protocol facts were obtained by observing traffic to a device the author owns, for
-interoperability. No vendor code is included in this repository. Use at your own risk.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+MIT License. See [LICENSE](LICENSE) for details.
+All brand names and trademarks belong to their respective owners.
